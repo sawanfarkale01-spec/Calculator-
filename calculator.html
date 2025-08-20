@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Calculator</title>
+<meta name="description" content="A clean, responsive calculator with history, memory keys, keyboard support, and light/dark auto theme.">
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --bg:#0b0c10;
+    --panel:#111319;
+    --btn:#171a22;
+    --btn2:#1e2330;
+    --txt:#edf2ff;
+    --muted:#8f98ad;
+    --accent:#6aa6ff;
+    --warn:#ffb020;
+    --err:#ff5c5c;
+    --ok:#37c773;
+    --radius:16px;
+    --shadow: 0 20px 40px rgba(0,0,0,.25);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f7fb; --panel:#ffffff; --btn:#f1f3f9; --btn2:#e9ecf6;
+      --txt:#101524; --muted:#5a6377; --accent:#2f6cff; --shadow:0 10px 24px rgba(0,0,0,.08);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font:16px/1.3 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(106,166,255,.15), transparent 50%),
+      var(--bg);
+    color:var(--txt);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .wrap{
+    width:min(420px, 100%);
+  }
+  .calc{
+    background:linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--panel);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  header{
+    padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .brand{font-weight:800; letter-spacing:.3px}
+  .screen{
+    padding:16px; display:flex; flex-direction:column; gap:8px;
+  }
+  .expr{
+    min-height:22px; color:var(--muted); font-size:14px; text-align:right; word-wrap:break-word;
+  }
+  .result{
+    font-size:36px; font-weight:700; text-align:right; letter-spacing:.3px; word-wrap:break-word;
+  }
+  .status{ font-size:12px; color:var(--muted); text-align:right; min-height:16px }
+  .grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; padding:14px; background:transparent;
+  }
+  button{
+    border:none; border-radius:14px; padding:18px 14px; font-size:18px; font-weight:600; cursor:pointer;
+    background:var(--btn); color:var(--txt);
+    transition:.15s transform, .15s filter;
+  }
+  button:active{ transform: translateY(1px); filter:brightness(.96); }
+  .op{ background: var(--btn2); }
+  .accent{ background: var(--accent); color:white; }
+  .wide{ grid-column: span 2; }
+  .muted{ color:var(--muted) }
+  .topbar{ display:flex; gap:8px; align-items:center }
+  .chip{ padding:6px 10px; border-radius:999px; background:var(--btn); font-size:12px; }
+  .history{
+    max-height:140px; overflow:auto; padding:10px 14px; border-top:1px solid rgba(255,255,255,.08);
+    display:none;
+  }
+  .history.open{ display:block; }
+  .history-item{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed rgba(255,255,255,.08); }
+  .history-item:last-child{ border-bottom:none }
+  .history small{ color:var(--muted) }
+  .link{ background:none; font-size:12px; text-decoration:underline; padding:0; cursor:pointer; }
+  .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
+  .footer{ text-align:center; color:var(--muted); font-size:12px; margin-top:10px }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="calc" id="calc">
+      <header>
+        <div class="brand">🧮 Smart Calculator</div>
+        <div class="topbar">
+          <span class="chip kbd">Keys: 0–9 • + - × ÷ • Enter = • C</span>
+          <button class="link" id="toggleHistory" aria-expanded="false">History</button>
+        </div>
+      </header>
+
+      <div class="screen">
+        <div class="expr" id="expr" aria-live="polite"></div>
+        <div class="result" id="result" aria-live="polite">0</div>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="grid" role="grid">
+        <!-- Row 1 -->
+        <button class="op" data-key="MC" aria-label="Memory Clear">MC</button>
+        <button class="op" data-key="MR" aria-label="Memory Recall">MR</button>
+        <button class="op" data-key="M+" aria-label="Memory Plus">M+</button>
+        <button class="op" data-key="M-" aria-label="Memory Minus">M-</button>
+
+        <!-- Row 2 -->
+        <button class="op" data-key="C" aria-label="Clear">C</button>
+        <button class="op" data-key="⌫" aria-label="Backspace">⌫</button>
+        <button class="op" data-key="%" aria-label="Percent">%</button>
+        <button class="op" data-key="÷" aria-label="Divide">÷</button>
+
+        <!-- Row 3 -->
+        <button data-key="7">7</button>
+        <button data-key="8">8</button>
+        <button data-key="9">9</button>
+        <button class="op" data-key="×" aria-label="Multiply">×</button>
+
+        <!-- Row 4 -->
+        <button data-key="4">4</button>
+        <button data-key="5">5</button>
+        <button data-key="6">6</button>
+        <button class="op" data-key="-" aria-label="Minus">−</button>
+
+        <!-- Row 5 -->
+        <button data-key="1">1</button>
+        <button data-key="2">2</button>
+        <button data-key="3">3</button>
+        <button class="op" data-key="+" aria-label="Plus">+</button>
+
+        <!-- Row 6 -->
+        <button class="wide" data-key="0">0</button>
+        <button data-key="." aria-label="Decimal">.</button>
+        <button class="accent" data-key="=" aria-label="Equals">=</button>
+      </div>
+
+      <div class="history" id="history" aria-live="polite" aria-label="History"></div>
+    </div>
+    <div class="footer">Tip: Click any history item to reuse it.</div>
+  </div>
+
+<script>
+(function(){
+  const exprEl = document.getElementById('expr');
+  const resultEl = document.getElementById('result');
+  const statusEl = document.getElementById('status');
+  const historyEl = document.getElementById('history');
+  const toggleHistoryBtn = document.getElementById('toggleHistory');
+  let expr = '';
+  let current = '0';
+  let memory = 0;
+  const history = [];
+
+  const ops = new Set(['+','-','×','÷']);
+  function updateScreen(){
+    exprEl.textContent = expr;
+    resultEl.textContent = current || '0';
+  }
+  function pushHistory(equation, out){
+    history.unshift({equation, out});
+    if(history.length>20) history.pop();
+    renderHistory();
+  }
+  function renderHistory(){
+    historyEl.innerHTML = history.map((h,i)=>
+      `<div class="history-item" data-index="${i}">
+        <small>${h.equation}</small>
+        <strong>${h.out}</strong>
+      </div>`
+    ).join('');
+  }
+  historyEl.addEventListener('click', (e)=>{
+    const item = e.target.closest('.history-item');
+    if(!item) return;
+    const i = +item.dataset.index;
+    current = String(history[i].out);
+    expr = '';
+    status('Recalled from history');
+    updateScreen();
+  });
+
+  toggleHistoryBtn.addEventListener('click', ()=>{
+    const open = historyEl.classList.toggle('open');
+    toggleHistoryBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  function status(msg, type='muted'){
+    statusEl.textContent = msg || '';
+    const map = {ok:'var(--ok)', warn:'var(--warn)', err:'var(--err)', muted:'var(--muted)'};
+    statusEl.style.color = map[type] || 'var(--muted)';
+    if(msg) setTimeout(()=>{ if(statusEl.textContent===msg) statusEl.textContent=''; }, 1500);
+  }
+
+  function input(ch){
+    if(ch === 'C'){
+      expr=''; current='0'; status('Cleared','ok'); updateScreen(); return;
+    }
+    if(ch === '⌫'){
+      if(current.length>1) current = current.slice(0,-1);
+      else current = '0';
+      updateScreen(); return;
+    }
+    if(ch === '%'){
+      const val = Number(current);
+      if(!isNaN(val)){
+        current = String(val/100);
+        status('Percent','ok'); updateScreen();
+      }
+      return;
+    }
+    if(ch === 'MC'){ memory = 0; status('Memory cleared','ok'); return; }
+    if(ch === 'MR'){ current = String(memory); status('Memory recall','ok'); updateScreen(); return; }
+    if(ch === 'M+'){ const v = Number(current); if(!isNaN(v)){ memory += v; status('M+','ok'); } return; }
+    if(ch === 'M-'){ const v = Number(current); if(!isNaN(v)){ memory -= v; status('M-','ok'); } return; }
+
+    if(ch === '='){
+      try{
+        const equation = (expr + ' ' + current).trim();
+        const out = evaluate(equation);
+        pushHistory(equation, out);
+        current = String(out);
+        expr = '';
+        updateScreen();
+      }catch{
+        status('Invalid expression','err');
+      }
+      return;
+    }
+    if(ops.has(ch)){
+      // replace trailing operator
+      if(expr && ops.has(expr.slice(-1))) expr = expr.slice(0,-1);
+      expr = (expr ? expr : '') + (expr? ' ' : '') + current + ' ' + ch;
+      current = '0';
+      updateScreen();
+      return;
+    }
+    // digits / dot
+    if(ch === '.'){
+      if(!current.includes('.')) current += '.';
+      updateScreen(); return;
+    }
+    if(/^\d$/.test(ch)){
+      current = (current==='0') ? ch : current + ch;
+      updateScreen(); return;
+    }
+  }
+
+  // Basic safe evaluator: supports + - × ÷ and decimals
+  function evaluate(equation){
+    // normalize to JS operators
+    const js = equation.replace(/×/g,'*').replace(/÷/g,'/');
+    // validate characters
+    if(!/^[0-9+\-*/.\s]+$/.test(js)) throw new Error('bad');
+    // tokenization: left-to-right is fine because JS handles precedence
+    const out = Function('"use strict";return ('+js+')')();
+    if(typeof out !== 'number' || !isFinite(out)) throw new Error('NaN');
+    // round to 10 dp to avoid FP artifacts
+    return Math.round(out * 1e10) / 1e10;
+  }
+
+  // Button clicks
+  document.querySelectorAll('.grid button').forEach(btn=>{
+    btn.addEventListener('click', ()=> input(btn.dataset.key));
+  });
+
+  // Keyboard support
+  const keyMap = {'*':'×','/':'÷','Enter':'=','=':'=','Backspace':'⌫','Delete':'C','c':'C'};
+  window.addEventListener('keydown', (e)=>{
+    const k = e.key;
+    if(/^\d$/.test(k) || k==='.' ) input(k);
+    else if(['+','-','*','/'].includes(k)) input(keyMap[k]||k);
+    else if(k==='Enter' || k==='=' ) { e.preventDefault(); input('='); }
+    else if(k==='Backspace'){ input('⌫'); }
+    else if(k==='Delete' || k==='c' || k==='C'){ input('C'); }
+    else if(k==='%'){ input('%'); }
+  });
+
+  updateScreen();
+})();
+</script>
+</body>
+</html>
