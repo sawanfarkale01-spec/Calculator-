@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sawan173.github.io/Multi-calculator-/sitemap.xml

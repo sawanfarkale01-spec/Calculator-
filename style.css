@@ -1,0 +1,41 @@
+
+:root{
+  --primary:#12c2e9;
+  --secondary:#5a87f7;
+  --bg:#f6f8fb;
+  --text:#1d2433;
+  --muted:#5b6577;
+  --card:#ffffff;
+  --radius:16px;
+  --shadow:0 10px 24px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+a{color:inherit;text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,#6a85f1, #17e1ff);color:#fff;box-shadow:var(--shadow)}
+.topbar .brand{display:flex;gap:10px;align-items:center;font-weight:700;padding:16px 20px;font-size:20px}
+.topbar .brand i{font-size:22px}
+.mainnav{display:flex;gap:14px;overflow:auto;padding:0 16px 16px 16px}
+.mainnav a{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:999px;white-space:nowrap}
+.mainnav a span{font-weight:600;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:18px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.card h3{margin:10px 0 6px}
+.card p{margin:0;color:var(--muted)}
+.hero{padding:40px 20px 10px 20px;text-align:center}
+.hero h1{font-size:36px;line-height:1.15;margin:10px 0}
+.hero p{max-width:700px;margin:0 auto;color:var(--muted)}
+.btn{display:inline-block;border:0;border-radius:12px;padding:14px 20px;background:linear-gradient(90deg,#6a85f1,#17e1ff);color:#fff;font-weight:700;box-shadow:var(--shadow)}
+.section{margin-top:18px}
+.form{display:grid;gap:12px}
+.input, select{width:100%;padding:14px 16px;border:1px solid #e6e8ee;border-radius:12px;background:#fff;font-size:16px}
+.result{margin-top:8px;font-weight:700;font-size:18px}
+.kbd{background:#eef1f6;border-radius:6px;padding:2px 6px}
+.footer{margin-top:40px;background:#0b1020;color:#c9d3ea}
+.footer .container{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:18px 24px}
+.footer a{color:#99a7c7}
+.icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#e8efff,#ffffff);box-shadow:var(--shadow);font-size:24px}
+.center{text-align:center}
+.small{font-size:13px;color:var(--muted)}
